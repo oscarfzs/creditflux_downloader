@@ -1,0 +1,7 @@
+selenium
+urllib3
+openpyxl
+xlrd
+pandas
+retrying
+tqdm

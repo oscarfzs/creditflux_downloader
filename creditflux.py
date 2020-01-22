@@ -3,6 +3,7 @@ import os
 import shutil
 import time
 import calendar
+from datetime import date
 
 import pickle
 import pandas as pd
@@ -65,7 +66,11 @@ class ExtractDataPage:
     # Download Button
     _element_id_download_button = "excel"
 
-    def __init__(self, dl_folder='./downloads', temp_folder='./temp', headless=True, verbose=True):
+    def __init__(self, 
+                dl_folder='./Downloads', 
+                temp_folder='./temp', 
+                headless=True, 
+                verbose=True):
         self._verbose = verbose
 
         self.driver = self._init_driver(dl_loc=temp_folder, headless=headless)
@@ -191,12 +196,14 @@ class ExtractDataPage:
     Functions for downloading files from the page
     """
 
-    def download(self,
-                dest,
-                CLO=None, 
-                results=None,
-                dateRange=None,
-                ):
+    def download(self, 
+                CLO=None,
+                results='Holdings',
+                startMonth='1',
+                startYear='1999',
+                endMonth=None,
+                endYear=None,
+                dest=None):
 
         # Downloads the data for one CLO deal
         # Will automatically check if the first downloaded excel sheet reaches the
@@ -205,6 +212,15 @@ class ExtractDataPage:
         # date ranges to download from. All the downloaded data for the CLO will then be merged into 
         # one single excel sheet.
 
+        if dest == None:
+            dest = self._path_downloads_folder + '/%s.xlsx' % CLO
+        
+        if endMonth == None or endYear == None:
+            current_date = date.today()
+            endMonth = str(current_date.month)
+            endYear = str(current_date.year)
+
+        dateRange = [startMonth, startYear, endMonth, endYear]
         self.handle_selections(CLO, results, dateRange)
         
         self.download_button.click()
@@ -235,26 +251,6 @@ class ExtractDataPage:
 
             self.clear_fields()
 
-    @retry((ValueError, FileNotFoundError), tries=4, delay=2, jitter=1)
-    def newest(self, folder):
-        list = glob.glob(folder + '/*')
-        filepath = max(list, key=os.path.getctime)
-        while filepath.find('.crdownload') >= 0:
-            time.sleep(1)
-            list = glob.glob(folder + '/*')
-            filepath = max(list, key=os.path.getctime)
-
-        return filepath
-        
-    def merged(self, df1, df2, dateColumn='As Of'):
-        return pd.concat([df1,df2], ignore_index=True)
-
-    def trimmed(self, df, dateColumn='As Of'):
-        N = len(df[dateColumn])
-        oldestDate = df[dateColumn][N-1]
-        
-        return oldestDate, df[df[dateColumn] != oldestDate]
-
     def _redownload(self, dest, dateRange, old_df):
         self.select_date_range(dateRange)
         self.download_button.click()
@@ -284,8 +280,28 @@ class ExtractDataPage:
                 os.remove(filepath)
             except FileNotFoundError:
                 pass
-
+            
             self.clear_fields()
+
+    @retry((ValueError, FileNotFoundError), tries=4, delay=2, jitter=1)
+    def newest(self, folder):
+        list = glob.glob(folder + '/*')
+        filepath = max(list, key=os.path.getctime)
+        while filepath.find('.crdownload') >= 0:
+            time.sleep(1)
+            list = glob.glob(folder + '/*')
+            filepath = max(list, key=os.path.getctime)
+
+        return filepath
+        
+    def merged(self, df1, df2, dateColumn='As Of'):
+        return pd.concat([df1,df2], ignore_index=True)
+
+    def trimmed(self, df, dateColumn='As Of'):
+        N = len(df[dateColumn])
+        oldestDate = df[dateColumn][N-1]
+        
+        return oldestDate, df[df[dateColumn] != oldestDate]
 
 
 

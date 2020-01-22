@@ -2,6 +2,7 @@ import time
 import threading
 import traceback
 import os
+from argparse import ArgumentParser
 
 from tqdm import tqdm
 
@@ -19,30 +20,30 @@ path_thread3_temp_folder = "./threading/thread3"
 path_thread4_temp_folder = "./threading/thread4"
 
 
-def func(names, dl_folder, thread_name='Thread'):
-    page = ExtractDataPage(temp_folder=dl_folder, verbose=False)
+def func(names, temp_folder, thread_name='Thread'):
+    page = ExtractDataPage(temp_folder=temp_folder, verbose=False)
 
-    for n in tqdm(names, desc=thread_name):
-        try:    
-            path = './Downloads/%s.xlsx' % n
-            page.download(dest=path, CLO=n, results='Holdings', 
-                            dateRange=['1','1999','1','2020'])
+    for deal_name in tqdm(names, desc=thread_name):
+        try:   
+            path = './Downloads/%s.xlsx' % deal_name
+            page.download(deal_name, dest=path)
         except:
-            with open('./logs/log.txt', 'a') as f:
+            with open('./logs/errors', 'a') as f:
                 f.write(traceback.format_exc())
+            
+            with open('./logs/failed', 'a') as f:
+                f.write(deal_name)
             
             try:
                 os.remove(path)
             except:
                 pass
 
-
-    
     page.driver.quit()
                 
 
 
-def run(file, num_threads=4):
+def run(file, num_threads=3):
     if num_threads > 4:
         print("Error: Thread count may not exceed 4")
 
@@ -78,3 +79,6 @@ def run(file, num_threads=4):
     runTime = endTime - startTime
 
     print("Completed in %d seconds" % runTime)
+
+def clear_folder(folder):
+    pass

@@ -103,10 +103,5 @@ Downloading Purchase/sale...
 >>> 
 ```
 
-By default, calling `page.download('CLO_DEAL_NAME')` will download *all* the data for that CLO, including Test Results, Tranches, Distributions, Holdings, and Purchase/sale, from the earliest record date to the present date, and the output is a single excel file with a separate sheet for each of the previously mentioned categories. The excel file will be placed within the `/Downloads` folder. To change the download location, use the function argument `dl_loc`:
-
-```
->>> page.download('Aurium CLO II', dl_loc='/path/to/folder')
-````
-
+By default, calling `page.download('CLO_DEAL_NAME')` will download *all* the data for that CLO, including Test Results, Tranches, Distributions, Holdings, and Purchase/sale, from the earliest record date to the present date, and the output is a single excel file with a separate sheet for each of the previously mentioned categories. 
 

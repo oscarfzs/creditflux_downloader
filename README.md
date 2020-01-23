@@ -105,3 +105,25 @@ Downloading Purchase/sale...
 
 By default, calling `page.download('CLO_DEAL_NAME')` will download *all* the data for that CLO, including Test Results, Tranches, Distributions, Holdings, and Purchase/sale, from the earliest record date to the present date, and the output is a single excel file with a separate sheet for each of the previously mentioned categories. 
 
+To download the results for just one category, use the function argument `results`:
+
+```
+>>> page.download('Aurium CLO II', results='Holdings')
+```
+
+The string corresponding to `results` must be exactly `'Holdings'`, `'Test Results'`, `'Tranches'`, `'Distributions'`, or `'Purchase/sale'`.
+
+When you are done, be sure to close the Webdriver so that it doesn't linger in your computer's running processes:
+
+```
+>>> page.driver.quit()
+```
+
+#### Downloading Multiple CLO Files ####
+
+`main.py` contains a function that allows you to download the excel data for multiple CLO deals. To do so, first create a plain text file containing the names of all the CLO deals, with each line containing a CLO deal like so:
+
+
+
+
+

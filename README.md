@@ -3,6 +3,9 @@
   - [Installing Python](#installing-python)
   - [Installing Prerequisites](#installing-prerequisites)
   - [Installing Chromedriver](#installing-chromedriver)
+- [Usage](#usage)
+  - [Intro](#intro)
+  - [Quick Start](#quick-start)
 
 
 ## Installation
@@ -60,7 +63,50 @@ $ cp chromedrivers/mac/chromedriver /usr/local/bin
 
 *To install it on Windows*, you do not need to move/copy any files. Later on, you will need to give the filepath of the windows chromedriver file to the `ExtractDataPage` object so that the Webdriver can use it.
 
-## ExtractDataPage ##
+## Usage ##
 
-![Alt text](./pictures/extract_data_page_annotated.png?raw=true "annotated")
+#### Intro ####
+
+The page from which we download the CLO excel data is encapsulated in the ExtractDataPage class. ExtractDataPage is a class which contains an instance of the Selenium Webdriver (running off of chromedriver). It also contains several Webdriver elements which represent some of the elements on the webpage. These elements can be interacted with using different ExtractDataPage object methods that can choose an option from the dropdown selection, enter the name of a CLO deal into the corresponding field, or download the excel data from the website. 
+
+[](./pictures/extract_data_page_annotated.png?raw=true "annotated")
+
+
+#### Quick Start #####
+
+The quickest way to download excel sheets from the site is within Python's interactive mode. While inside the application folder, open up Terminal or Command Prompt and type `python -i main.py`, which will display the following:
+
+```
+$ python -i main.py
+>>> 
+```
+
+First create an ExtractDataPage object:
+
+```
+>>> page = ExtractDataPage()
+Connecting to https://cloi.creditflux.com/ExtractData...
+Loading cookies...
+Identifying filter elements...
+>>>
+```
+
+To download all the results for a given CLO, invoke the `download()` method like so:
+
+```
+>>> page.download('Aurium CLO II')
+Downloading Holdings...
+Downloading Test Results...
+Downloading Tranches...
+Downloading Distributions...
+Downloading Purchase/sale...
+>>> 
+```
+
+By default, calling `page.download('CLO_DEAL_NAME')` will download *all* the data for that CLO, including Test Results, Tranches, Distributions, Holdings, and Purchase/sale, from the earliest record date to the present date, and the output is a single excel file with a separate sheet for each of the previously mentioned categories. The excel file will be placed within the `/Downloads` folder. To change the download location, use the function argument `dl_loc`:
+
+```
+>>> page.download('Aurium CLO II', dl_loc='/path/to/folder')
+````
+
 

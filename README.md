@@ -69,7 +69,7 @@ $ cp chromedrivers/mac/chromedriver /usr/local/bin
 
 The page from which we download the CLO excel data is encapsulated in the ExtractDataPage class. ExtractDataPage is a class which contains an instance of the Selenium Webdriver (running off of chromedriver). It also contains several Webdriver elements which represent some of the elements on the webpage. These elements can be interacted with using different ExtractDataPage object methods that can choose an option from the dropdown selection, enter the name of a CLO deal into the corresponding field, or download the excel data from the website. 
 
-[](./pictures/extract_data_page_annotated.png?raw=true "annotated")
+![](./pictures/extract_data_page_annotated.png?raw=true "annotated")
 
 
 #### Quick Start #####
@@ -103,7 +103,7 @@ Downloading Purchase/sale...
 >>> 
 ```
 
-By default, calling `page.download('CLO_DEAL_NAME')` will download *all* the data for that CLO, including Test Results, Tranches, Distributions, Holdings, and Purchase/sale, from the earliest record date to the present date, and the output is a single excel file with a separate sheet for each of the previously mentioned categories. 
+By default, calling `page.download('CLO_DEAL_NAME')` will download *all* the data for that CLO, including Test Results, Tranches, Distributions, Holdings, and Purchase/sale, from the earliest record date to the present date, and the output is a single excel file with a separate sheet for each of the previously mentioned categories. The excel file will be placed in the `Downloads` folder of this application, but you may specify a different download folder when initializing the `ExtractDataPage` object. Details can be found in section TODO:
 
 To download the results for just one category, use the function argument `results`:
 
@@ -123,7 +123,14 @@ When you are done, be sure to close the Webdriver so that it doesn't linger in y
 
 `main.py` contains a function that allows you to download the excel data for multiple CLO deals. To do so, first create a plain text file containing the names of all the CLO deals, with each line containing a CLO deal like so:
 
+![clo](./pictures/clo_deals.png?raw=true "clo")
 
+Then, once you have executed `python -i main.py`, call the function `download_multiple('path/to/text/file')`:
 
+```
+>>> download_multiple('test/names10.txt')
+Thread 1:  80%|████████████████████████████████████████████████████████████▊               | 4/5 [06:15<01:35, 95.03s/it]
+Thread 2:  60%|█████████████████████████████████████████████                              | 3/5 [05:04<03:27, 103.95s/it]
+```
 
-
+`download_multiple` by default creates two worker threads that will download the excel sheets for the CLO deals in the text file.

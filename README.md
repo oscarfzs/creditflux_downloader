@@ -62,4 +62,5 @@ $ cp chromedrivers/mac/chromedriver /usr/local/bin
 
 ## ExtractDataPage ##
 
-![Alt text](./pictures/extract_data_page.png?raw=true "Optional Title")
+![Alt text](./pictures/extract_data_page_annotated.png?raw=true "annotated")
+

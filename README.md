@@ -60,4 +60,6 @@ $ cp chromedrivers/mac/chromedriver /usr/local/bin
 
 *To install it on Windows*, you do not need to move/copy any files. Later on, you will need to give the filepath of the windows chromedriver file to the `ExtractDataPage` object so that the Webdriver can use it.
 
-![Alt text](./pictures/extract_data_page.png?raw=true "Optional Title"
+## ExtractDataPage ##
+
+![Alt text](./pictures/extract_data_page.png?raw=true "Optional Title")

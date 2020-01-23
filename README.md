@@ -6,6 +6,8 @@
 - [Usage](#usage)
   - [Intro](#intro)
   - [Quick Start](#quick-start)
+  - [Downloading Multiple CLO Files](#downloading-multiple-clo-files)
+- [ExtractDataPage](#extractdatapage)
 
 
 ## Installation
@@ -69,9 +71,6 @@ $ cp chromedrivers/mac/chromedriver /usr/local/bin
 
 The page from which we download the CLO excel data is encapsulated in the ExtractDataPage class. ExtractDataPage is a class which contains an instance of the Selenium Webdriver (running off of chromedriver). It also contains several Webdriver elements which represent some of the elements on the webpage. These elements can be interacted with using different ExtractDataPage object methods that can choose an option from the dropdown selection, enter the name of a CLO deal into the corresponding field, or download the excel data from the website. 
 
-![](./pictures/extract_data_page_annotated.png?raw=true "annotated")
-
-
 #### Quick Start #####
 
 The quickest way to download excel sheets from the site is within Python's interactive mode. While inside the application folder, open up Terminal or Command Prompt and type `python -i main.py`, which will display the following:
@@ -134,3 +133,7 @@ Thread 2:  60%|█████████████████████�
 ```
 
 `download_multiple` by default creates two worker threads that will download the excel sheets for the CLO deals in the text file.
+
+## ExtractDataPage ##
+
+![](./pictures/extract_data_page_annotated.png?raw=true "annotated")

@@ -56,7 +56,7 @@ To install these packages, type
 $ pip install -r requirements.txt
 ```
 
-which will automatically download and install them. If any of the packages fail to download using `pip install -r requirements.txt`, you can install the ones that failed using `pip install NAME_OF_PACKAGE`.
+which will automatically download and install them. If any of the packages fail to download using `pip install -r requirements.txt`, you can try individually installing the ones that failed using `pip install NAME_OF_PACKAGE`.
 
 #### **Installing Chromedriver**
 

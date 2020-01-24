@@ -89,7 +89,7 @@ The page from which we download the CLO excel data is encapsulated in the Extrac
 
 #### Quick Start #####
 
-The quickest way to download excel sheets from the site is within Python's interactive mode. While inside the application folder, open up Terminal or Command Prompt and type `python -i main.py`, which will display the following:
+The quickest way to download excel sheets from the site is within Python's interactive mode. While inside the application folder, open up Terminal or Command Prompt and type `python -i main.py`
 
 ```
 $ python -i main.py

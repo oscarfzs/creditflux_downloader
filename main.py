@@ -39,8 +39,11 @@ def func(names, args):
             
             try:
                 os.remove(path)
-            except:
+            except FileNotFoundError:
                 pass
+        finally:
+            page.clear_temp()
+
 
     page.driver.quit()
                 

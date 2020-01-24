@@ -15,7 +15,7 @@ path_chromedrivers_folder = "./chromedrivers"
 path_logs_folder = "./logs"
 path_temp_folder = "./temp"
 
-path_thread_temp_folder = ["./threading/thread%d" % i for i in range(1,5)]
+path_thread_temp_folder = ["threading/thread%d" % i for i in range(1,5)]
 
 def clear_logs():
     list = glob.glob(path_logs_folder + '/*')
@@ -52,10 +52,17 @@ def func(names, args):
 def download_multiple(file, 
                     results='all',
                     num_threads=2,
-                    dl_folder='./Downloads'
+                    dl_folder='./Downloads',
+                    abs_path=None
                     ):
     if num_threads > 4:
         print("Error: Thread count may not exceed 4")
+
+    if abs_path == None:
+        abs_path = ""
+    else:
+        abs_path = abs_path + '/'
+
 
     startTime = time.time()
 
@@ -76,7 +83,7 @@ def download_multiple(file,
         args['results'] = results
         args['num_threads'] = num_threads
         args['thread_name'] = "Thread%d" % (i+1)
-        args['temp_folder'] = path_thread_temp_folder[i]
+        args['temp_folder'] = abs_path + path_thread_temp_folder[i]
         args['dl_folder'] = dl_folder
         t = threading.Thread(target=func, args=(subset[i], args,))
         threads.append(t)

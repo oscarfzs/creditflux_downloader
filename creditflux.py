@@ -78,7 +78,8 @@ class ExtractDataPage:
         self._verbose = verbose
 
         self.driver = self._init_driver(dl_loc=temp_folder, headless=headless, chromedriver_path=chromedriver_path)
-
+        enable_downloads(self.driver, temp_folder)
+        
         self._path_downloads_folder = dl_folder
         self._path_temp_folder = temp_folder
 

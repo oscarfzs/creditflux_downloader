@@ -7,6 +7,8 @@
   - [Intro](#intro)
   - [Quick Start](#quick-start)
   - [Downloading Multiple CLO Files](#downloading-multiple-clo-files)
+  - [Specifying Download Folder](#specifying-download-folder)
+  - [Logging In](#logging-in)
 - [ExtractDataPage](#extractdatapage)
 
 
@@ -102,15 +104,8 @@ Downloading Purchase/sale...
 >>> 
 ```
 
-By default, calling `page.download('CLO_DEAL_NAME')` will download *all* the data for that CLO, including Test Results, Tranches, Distributions, Holdings, and Purchase/sale, from the earliest record date to the present date, and the output is a single excel file with a separate sheet for each of the previously mentioned categories. The excel file will be placed in the `Downloads` folder of this application, but you may specify a different download folder when initializing the `ExtractDataPage` object. Details can be found in section TODO:
+By default, calling `page.download('CLO_DEAL_NAME')` will download *all* the data for that CLO, including Test Results, Tranches, Distributions, Holdings, and Purchase/sale, from the earliest record date to the present date, and the output is a single excel file with a separate sheet for each of the previously mentioned categories. The excel file will be placed in the `Downloads` folder of this application, but you may specify a different download folder when initializing the `ExtractDataPage` object. Details can be found in a later section.
 
-To download the results for just one category, use the function argument `results`:
-
-```
->>> page.download('Aurium CLO II', results='Holdings')
-```
-
-The string corresponding to `results` must be exactly `'Holdings'`, `'Test Results'`, `'Tranches'`, `'Distributions'`, or `'Purchase/sale'`.
 
 When you are done, be sure to close the Webdriver so that it doesn't linger in your computer's running processes:
 
@@ -120,11 +115,11 @@ When you are done, be sure to close the Webdriver so that it doesn't linger in y
 
 #### Downloading Multiple CLO Files ####
 
-`main.py` contains a function that allows you to download the excel data for multiple CLO deals. To do so, first create a plain text file containing the names of all the CLO deals, with each line containing a CLO deal like so:
+`main.py` contains a function that allows you to download the excel data for multiple CLO deals. To do so, first create a plain text file containing the names of the CLO deals that you wish to download, with each line containing a CLO deal like so:
 
 ![clo](./pictures/clo_deals.png?raw=true "clo")
 
-Then, once you have executed `python -i main.py`, call the function `download_multiple('path/to/text/file')`:
+Then, after having executed `python -i main.py`, call the function `download_multiple('path/to/text/file')`:
 
 ```
 >>> download_multiple('test/names10.txt')
@@ -132,7 +127,52 @@ Thread 1:  80%|█████████████████████�
 Thread 2:  60%|█████████████████████████████████████████████                              | 3/5 [05:04<03:27, 103.95s/it]
 ```
 
-`download_multiple` by default creates two worker threads that will download the excel sheets for the CLO deals in the text file.
+`download_multiple` by default creates two worker threads that will download the excel sheets for the CLO deals in the text file. The temp folders that the threads use are located in the `threading` folder. You can choose how many threads to spawn (max: 4) using the argument `num_threads`.
+
+```
+>>> download_multiple('test/names10.txt', num_threads=4)
+Thread1:  50%|█████████████████████████████████████                                        | 1/2 [01:56<00:00, 58.50s/it]
+Thread2: 100%|█████████████████████████████████████████████████████████████████████████████| 3/3 [02:32<00:00, 50.77s/it]
+Thread3: 100%|█████████████████████████████████████████████████████████████████████████████| 3/3 [02:49<00:00, 56.62s/it]
+Thread4:  50%|█████████████████████████████████████                                        | 1/2 [02:45<00:00, 82.57s/it]
+```
+It is recommended to use only two threads when downloading data for all the categories (Test Results, Tranches, Distributions, Holdings, Purchase/sale). Using four threads in the scenario may actually end up slower than using two threads. However, if you are downloading data for only one category, say Holdings, then you may likely benefit from using four threads to download the files. To download the results of only one category, use the argument `results'
+
+```
+>>> download_multiple('test/names10.txt', results='Holdings')
+```
+
+
+#### Specifying Download Folder ####
+
+If you want the downloaded files to go to another folder instead of `Downloads`, you may specify the `dl_folder` argument when initializing the `ExtractDataPage` object.
+
+```
+>>> page = ExtractDataPage(dl_folder='new/path/to/folder')
+>>> page.download('1828 CLO')
+```
+
+When downloading multiple CLOs, you can also specify the `dl_folder` argument.
+
+```
+>>> download_multiple('test/names10.txt', dl_folder='new/path/to/folder')
+```
+
+#### Logging In #####
+
+For the creditflux website, all login data is stored in browser cookies, meaning that if you login to the website and save your cookies, you can continue using the site in the future without having to login again, provided that you re-use the cookies from the previous session.
+
+There is already a cookies file located in the application folder that the program will automatically use when accessing the site. However, if for any reason the file is deleted or the cookies expire, you will first have to re-login using the `login_url` argument when initializing the `ExtractDataPage` object.
+
+```
+>>> page = ExtractDataPage(login_url='https://cloi.creditflux.com/Authentication/9c8e31917c8a89a3542aad76c730ba34')
+Connecting to https://cloi.creditflux.com/ExtractData...
+Logging in with url: https://cloi.creditflux.com/Authentication/9c8e31917c8a89a3542aad76c730ba34
+Identifying filter elements...
+>>>
+```
+
+Logging in using the example above will also create a new `cookies.pickle` file, which contains all the cookies needed to preserve the session for future access. 
 
 ## ExtractDataPage ##
 

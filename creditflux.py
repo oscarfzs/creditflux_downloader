@@ -110,9 +110,12 @@ class ExtractDataPage:
         
     def _init_driver(self, dl_loc, headless=True, chromedriver_path=None):
         options = webdriver.ChromeOptions()
-        prefs = {'download.default_directory':dl_loc,
+        prefs = {
+                'download.default_directory':dl_loc,
                 'download.directory_upgrade':True,
-                'download.prompt_for_download':"false"
+                'download.prompt_for_download':False,
+                'safebrowsing_for_trusted_sources_enabled':False,
+                'safebrowsing.enabled':False
                 }
         if headless:
             options.add_argument("--headless")

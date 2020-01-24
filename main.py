@@ -24,7 +24,7 @@ def clear_logs():
             f.write('')
 
 def func(names, args):
-    page = ExtractDataPage(dl_folder=args['dl_loc'], temp_folder=args['temp_folder'], verbose=False)
+    page = ExtractDataPage(dl_folder=args['dl_folder'], temp_folder=args['temp_folder'], verbose=False)
 
     for deal_name in tqdm(names, desc=args['thread_name']):
         try:   
@@ -49,7 +49,7 @@ def func(names, args):
 def download_multiple(file, 
                     results='all',
                     num_threads=2,
-                    dl_loc='./Downloads'
+                    dl_folder='./Downloads'
                     ):
     if num_threads > 4:
         print("Error: Thread count may not exceed 4")
@@ -74,7 +74,7 @@ def download_multiple(file,
         args['num_threads'] = num_threads
         args['thread_name'] = "Thread%d" % (i+1)
         args['temp_folder'] = path_thread_temp_folder[i]
-        args['dl_loc'] = dl_loc
+        args['dl_folder'] = dl_folder
         t = threading.Thread(target=func, args=(subset[i], args,))
         threads.append(t)
     

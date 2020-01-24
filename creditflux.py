@@ -379,7 +379,7 @@ class ExtractDataPage:
                             _closewriter=False)
 
 
-    @retry((ValueError, FileNotFoundError), tries=20, delay=0.5)
+    @retry((ValueError, FileNotFoundError), tries=10, delay=1)
     def newest(self, folder):
         list = glob.glob(folder + '/*')
         filepath = max(list, key=os.path.getctime)

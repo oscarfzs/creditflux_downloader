@@ -1,3 +1,4 @@
+import glob
 import time
 import threading
 import traceback
@@ -14,25 +15,27 @@ path_chromedrivers_folder = "./chromedrivers"
 path_logs_folder = "./logs"
 path_temp_folder = "./temp"
 
-path_thread1_temp_folder = "./threading/thread1"
-path_thread2_temp_folder = "./threading/thread2"
-path_thread3_temp_folder = "./threading/thread3"
-path_thread4_temp_folder = "./threading/thread4"
+path_thread_temp_folder = ["./threading/thread%d" % i for i in range(1,5)]
 
+def clear_logs():
+    list = glob.glob(path_logs_folder + '/*')
+    for filepath in list:
+        with open(filepath, 'w') as f:
+            f.write('')
 
-def func(names, temp_folder, thread_name='Thread'):
-    page = ExtractDataPage(temp_folder=temp_folder, verbose=False)
+def func(names, args):
+    page = ExtractDataPage(dl_folder=args['dl_loc'], temp_folder=args['temp_folder'], verbose=False)
 
-    for deal_name in tqdm(names, desc=thread_name):
+    for deal_name in tqdm(names, desc=args['thread_name']):
         try:   
             path = './Downloads/%s.xlsx' % deal_name
-            page.download(deal_name, dest=path)
+            page.download(deal_name, results=args['results'], dest=path)
         except:
             with open('./logs/errors', 'a') as f:
                 f.write(traceback.format_exc())
             
             with open('./logs/failed', 'a') as f:
-                f.write(deal_name)
+                f.write(deal_name + '\n')
             
             try:
                 os.remove(path)
@@ -43,7 +46,11 @@ def func(names, temp_folder, thread_name='Thread'):
                 
 
 
-def run(file, num_threads=3):
+def download_multiple(file, 
+                    results='all',
+                    num_threads=2,
+                    dl_loc='./Downloads'
+                    ):
     if num_threads > 4:
         print("Error: Thread count may not exceed 4")
 
@@ -62,10 +69,13 @@ def run(file, num_threads=3):
 
     threads = []
     for i in range(num_threads):
-        t = threading.Thread(target=func, args=(subset[i], 
-                                                './threading/thread%d' % (i+1), 
-                                                'Thread %d' % (i+1))
-        )
+        args = {}
+        args['results'] = results
+        args['num_threads'] = num_threads
+        args['thread_name'] = "Thread%d" % (i+1)
+        args['temp_folder'] = path_thread_temp_folder[i]
+        args['dl_loc'] = dl_loc
+        t = threading.Thread(target=func, args=(subset[i], args,))
         threads.append(t)
     
     for t in threads:

@@ -19,9 +19,11 @@ from selenium.webdriver.support.ui import Select
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.common.exceptions import StaleElementReferenceException
+
+
 
 def enable_downloads(browser, download_dir):
-        #add missing support for chrome "send_command"  to selenium webdriver
         browser.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
 
         params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
@@ -40,7 +42,7 @@ class ExtractDataPage:
                                    'startYear':'//*[@id="periodEndDateYear1"]',
                                     'endMonth':'//*[@id="periodEndDateMonth2"]',
                                      'endYear':'//*[@id="periodEndDateYear2"]',
-    }
+    } 
 
     # Filters
     _filter_xpaths = {
@@ -68,18 +70,24 @@ class ExtractDataPage:
 
     def __init__(self, 
                 dl_folder='./Downloads', 
-                temp_folder='./temp', 
+                temp_folder='./temp',
+                login_url=None, 
                 headless=True, 
-                verbose=True):
+                verbose=True,
+                chromedriver_path=None):
         self._verbose = verbose
 
-        self.driver = self._init_driver(dl_loc=temp_folder, headless=headless)
+        self.driver = self._init_driver(dl_loc=temp_folder, headless=headless, chromedriver_path=chromedriver_path)
 
         self._path_downloads_folder = dl_folder
         self._path_temp_folder = temp_folder
 
         self.connect()
-        self.load_session()
+        if login_url == None:
+            self.load_session()
+        else:
+            self.login(login_url)
+
         self.driver.refresh()
 
         time.sleep(5)
@@ -96,19 +104,29 @@ class ExtractDataPage:
         self.CLO_field = self.driver.find_element_by_xpath(self._filter_xpaths['CLO'])
 
         self.download_button = self.driver.find_element_by_id(self._element_id_download_button)
+    
+    def __del__(self):
+        self.clear_temp()
         
-    def _init_driver(self, dl_loc, headless=True):
+    def _init_driver(self, dl_loc, headless=True, chromedriver_path=None):
         options = webdriver.ChromeOptions()
-        prefs = {"download.default_directory": dl_loc,
+        prefs = {'download.default_directory':dl_loc,
+                'download.directory_upgrade':True,
                 'download.prompt_for_download':"false"
                 }
-        #'download.directory_upgrade':True,
         if headless:
             options.add_argument("--headless")
 
         options.add_experimental_option("prefs", prefs)
+        
+        if chromedriver_path == None:
+            return webdriver.Chrome(options=options)
+        else:
+            return webdriver.Chrome(executable_path=chromedriver_path, options=options)
 
-        return webdriver.Chrome(options=options)
+    def output(self, message):
+        if self._verbose:
+            print(message)
     
     def login(self, login_url):
         if self._verbose:
@@ -149,17 +167,11 @@ class ExtractDataPage:
         for c in cookies:
             self.driver.add_cookie(c)
 
-    @retry(ElementClickInterceptedException, tries=4, delay=1, jitter=1)
+    @retry((ElementClickInterceptedException, StaleElementReferenceException),
+             tries=5, delay=1, jitter=1)
     def select_CLO(self, name):
-        #wait = WebDriverWait(self.driver, 10)
         self.CLO_field.click()
         xpath = self._filter_selection_xpaths['CLO']
-        '''
-        selection = wait.until(EC.element_to_be_clickable((By.XPATH, 
-                                                            xpath +
-                                                            '/li[contains(text(), "%s")]' % name)))
-        '''
-        
         selection = self.driver.find_element_by_xpath(xpath + '/li[contains(text(), "%s")]' % name)
 
         selection.click()
@@ -197,13 +209,15 @@ class ExtractDataPage:
     """
 
     def download(self, 
-                CLO=None,
-                results='Holdings',
+                CLO,
+                results='all',
                 startMonth='1',
                 startYear='1999',
                 endMonth=None,
                 endYear=None,
-                dest=None):
+                dest=None,
+                _excelwriter=None,
+                _closewriter=True):
 
         # Downloads the data for one CLO deal
         # Will automatically check if the first downloaded excel sheet reaches the
@@ -219,9 +233,27 @@ class ExtractDataPage:
             current_date = date.today()
             endMonth = str(current_date.month)
             endYear = str(current_date.year)
+        
+        if _excelwriter == None:
+            writer = pd.ExcelWriter(dest, engine='openpyxl', datetime_format='YYYY-MM-DD')
+        else:
+            writer = _excelwriter
+        
+        if results == "All" or results == "all":
+            self._download_all_results(CLO, 
+                                        startMonth,
+                                        startYear,
+                                        endMonth,
+                                        endYear,
+                                        dest,
+                                        writer)
+            return
 
         dateRange = [startMonth, startYear, endMonth, endYear]
         self.handle_selections(CLO, results, dateRange)
+
+        if results.find('/') >= 0:
+            results = results.replace('/', '_')
         
         self.download_button.click()
 
@@ -240,9 +272,13 @@ class ExtractDataPage:
             except FileNotFoundError:
                 pass
 
-            self._redownload(dest, newDateRange, trimmed_df)
-        else:
-            shutil.move(filepath, dest)
+            self._redownload(dest, results, newDateRange, trimmed_df, writer, _closewriter)
+        else:            
+            df.to_excel(writer, sheet_name=results, index=False)
+            writer.save()
+
+            if _closewriter:
+                writer.close()
 
             try:
                 os.remove(filepath)
@@ -251,7 +287,7 @@ class ExtractDataPage:
 
             self.clear_fields()
 
-    def _redownload(self, dest, dateRange, old_df):
+    def _redownload(self, dest, results, dateRange, old_df, _excelwriter, _closewriter):
         self.select_date_range(dateRange)
         self.download_button.click()
 
@@ -272,9 +308,14 @@ class ExtractDataPage:
             except FileNotFoundError:
                 pass
 
-            self._redownload(dest, newDateRange, trimmed_df)
+            self._redownload(dest, results, newDateRange, trimmed_df, _excelwriter, _closewriter)
         else:
-            merged_df.to_excel(dest, index=False)
+            merged_df.to_excel(_excelwriter, sheet_name=results, index=False)
+
+            _excelwriter.save()
+
+            if _closewriter:
+                _excelwriter.close()
 
             try:
                 os.remove(filepath)
@@ -283,7 +324,62 @@ class ExtractDataPage:
             
             self.clear_fields()
 
-    @retry((ValueError, FileNotFoundError), tries=4, delay=2, jitter=1)
+    def _download_all_results(self,
+                                CLO,
+                                startMonth,
+                                startYear,
+                                endMonth,
+                                endYear,
+                                dest,
+                                excelwriter):
+            
+            writer = excelwriter
+
+            if self._verbose:
+                print('Downloading Holdings...')
+
+            self.download(CLO, results="Holdings", startMonth=startMonth,
+                            startYear=startYear, endMonth=endMonth,
+                            endYear=endYear, dest=dest, _excelwriter=writer,
+                            _closewriter=True)
+        
+            
+            appender = pd.ExcelWriter(dest, engine='openpyxl', datetime_format='YYYY-MM-DD', mode='a')
+
+            if self._verbose:
+                print("Downloading Test Results...")
+            
+            self.download(CLO, results="Test Results", startMonth=startMonth,
+                            startYear=startYear, endMonth=endMonth,
+                            endYear=endYear, dest=dest, _excelwriter=appender,
+                            _closewriter=False)
+
+            if self._verbose:
+                print('Downloading Tranches...')
+            
+            self.download(CLO, results="Tranches", startMonth=startMonth,
+                            startYear=startYear, endMonth=endMonth,
+                            endYear=endYear, dest=dest, _excelwriter=appender,
+                            _closewriter=False)
+
+            if self._verbose:
+                print('Downloading Distributions...')
+
+            self.download(CLO, results="Distributions", startMonth=startMonth,
+                            startYear=startYear, endMonth=endMonth,
+                            endYear=endYear, dest=dest, _excelwriter=appender,
+                            _closewriter=False)
+
+            if self._verbose:
+                print("Downloading Purchase/sale...")
+
+            self.download(CLO, results="Purchase/sale", startMonth=startMonth,
+                            startYear=startYear, endMonth=endMonth,
+                            endYear=endYear, dest=dest, _excelwriter=appender,
+                            _closewriter=False)
+
+
+    @retry((ValueError, FileNotFoundError), tries=20, delay=0.5)
     def newest(self, folder):
         list = glob.glob(folder + '/*')
         filepath = max(list, key=os.path.getctime)
@@ -302,9 +398,14 @@ class ExtractDataPage:
         oldestDate = df[dateColumn][N-1]
         
         return oldestDate, df[df[dateColumn] != oldestDate]
-
-
-
+    
+    def clear_temp(self):
+        list = glob.glob(self._path_temp_folder + '/*')
+        for filepath in list:
+            try:
+                os.remove(filepath)
+            except FileNotFoundError:
+                pass
 
 
 

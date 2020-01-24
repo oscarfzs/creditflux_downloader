@@ -5,7 +5,6 @@
   - [Installing Chromedriver](#installing-chromedriver)
 - [Intro](#intro)
 - [Usage](#usage)
-  - [Intro](#intro)
   - [Quick Start](#quick-start)
   - [Downloading Multiple CLO Files](#downloading-multiple-clo-files)
   - [Specifying Download Folder](#specifying-download-folder)

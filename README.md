@@ -9,6 +9,7 @@
   - [Downloading Multiple CLO Files](#downloading-multiple-clo-files)
   - [Specifying Download Folder](#specifying-download-folder)
   - [Logging In](#logging-in)
+  - [Windows Chromedriver](#windows-chromedriver)
 - [ExtractDataPage](#extractdatapage)
 
 
@@ -22,7 +23,7 @@ If you already have Python 3.x installed, you may skip this step. However, you s
 $ python --version
 ```
 
-which will display which version you are on (e.g. `$ 3.6.0`). Also check to make sure your version of `pip` is updated and corresponds to the version of Python that you are using. Type `pip --version` to see which version you are on. It should look something like `pip 20.0.1 from path/to/pip (python 3.6)` where `path/to/pip` corresponds to the filepath of wherever pip is located. 
+which will display which version you are on (e.g. `$ 3.6.0`). If doing so yields the old Python 2.7 version, you may have to use `python3` instead of `python`. Also check to make sure your version of `pip` is updated and corresponds to the version of Python that you are using. Type `pip --version` to see which version you are on. It should look something like `pip 20.0.1 from path/to/pip (python 3.6)` where `path/to/pip` corresponds to the filepath of wherever pip is located. 
 
 If you do not have Python 3.x installed, download and install from here: 
 
@@ -49,11 +50,13 @@ tqdm==4.41.1
 urllib3==1.25.8
 xlrd==1.2.0
 ```
-The names of these packages are located in `requirements.txt`, and they can all be installed using `pip` like so:
+To install these packages, type
 
 ```
 $ pip install -r requirements.txt
 ```
+
+which will automatically download and install them. If any of the packages fail to download using `pip install -r requirements.txt`, you can install the ones that failed using `pip install NAME_OF_PACKAGE`.
 
 #### **Installing Chromedriver**
 
@@ -173,6 +176,19 @@ Identifying filter elements...
 ```
 
 Logging in using the example above will also create a new `cookies.pickle` file, which contains all the cookies needed to preserve the session for future access. 
+
+#### Windows Chromedriver #####
+
+On Windows, you must specify the path to the chromedriver when initializing the `ExtractDataPage` object.
+
+```
+>>> page = ExtractDataPage(chromedriver_path='path/to/chromedriver')
+```
+
+There is a copy of chromedriver located in the `chromedrivers/windows` folder, so you can type:
+```
+>>> page = ExtractDataPage(chromedriver_path='chromedrivers/windows/chromedriver')
+```
 
 ## ExtractDataPage ##
 

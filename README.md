@@ -3,6 +3,7 @@
   - [Installing Python](#installing-python)
   - [Installing Prerequisites](#installing-prerequisites)
   - [Installing Chromedriver](#installing-chromedriver)
+- [Intro](#intro)
 - [Usage](#usage)
   - [Intro](#intro)
   - [Quick Start](#quick-start)
@@ -70,9 +71,20 @@ $ cp chromedrivers/mac/chromedriver /usr/local/bin
 
 *To install it on Windows*, you do not need to move/copy any files. Later on, you will need to give the filepath of the windows chromedriver file to the `ExtractDataPage` object so that the Webdriver can use it.
 
+## Intro ##
+
+The two problems of downloading files from https://cloi.creditflux.com/ExtractData are:
+
+  1. Downloading files from multiple CLO deals is a time-consuming manual process.
+  
+  2. The excel files downloaded from the site have a 5000-line limit. In order to download all historical data for any particular CLO deal, one must download the excel data, see how far back the records go before hitting the 5000-line limit, then re-download starting from the the oldest record date. This process needs to be repeated until all historical data is downloaded, then the excel files must be stitched together and any overlapping data between the excel files must be trimmed so no duplicates arise from the stitching process (although the original data itself may contain duplicates).
+  
+The first problem is solved using the Python implementation of Selenium Webdriver. Selenium Webdriver mimics an instance of a web browser. It can connect to a website and interact with its elements, clicking on links, selecting dropdown choices, filling in fields. Anything that can be done by a human through a web browser and a mouse and keyboard, can be done by the Selenium Webdriver. Once the Selenium Webdriver has been set up, one simply needs to write a Python script that automatically fills in the selections and choices on the creditflux website and clicks the download button.
+
+The second problem is solved using the Python package `pandas`. `pandas` is a data analysis package that allows one to read, write, and save excel sheets. By downloading the excel sheets and checking if it hits the 5000-line limit, we can quickly go back and redownload any missing data and stitch the excel sheets together with a Python script that uses `pandas`. 
+
 ## Usage ##
 
-#### Intro ####
 
 The page from which we download the CLO excel data is encapsulated in the ExtractDataPage class. ExtractDataPage is a class which contains an instance of the Selenium Webdriver (running off of chromedriver). It also contains several Webdriver elements which represent some of the elements on the webpage. These elements can be interacted with using different ExtractDataPage object methods that can choose an option from the dropdown selection, enter the name of a CLO deal into the corresponding field, or download the excel data from the website. 
 

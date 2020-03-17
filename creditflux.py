@@ -23,15 +23,12 @@ from selenium.common.exceptions import StaleElementReferenceException
 
 
 
-def enable_downloads(browser, download_dir):
-        browser.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
-
-        params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
-        browser.execute("send_command", params)
-
 class ExtractDataPage:
     _EXCEL_MAX_ROWS = 5000
     _download_wait_time = 3
+
+    _path_downloads_folder = None
+    _path_temp_folder = None
 
     url = "https://cloi.creditflux.com/ExtractData"
 
@@ -65,7 +62,7 @@ class ExtractDataPage:
                                     'CLOTags':'//*[@id="tagId_chzn"]/div/ul'
     }
 
-    # Download Button
+    # Download Button 
     _element_id_download_button = "excel"
 
     def __init__(self, 
@@ -77,13 +74,24 @@ class ExtractDataPage:
                 chromedriver_path=None):
         self._verbose = verbose
 
+        #file/folder paths must be converted to absolute paths for downloads to work on windows
+        dl_folder = os.path.abspath(dl_folder)
+        temp_folder = os.path.abspath(temp_folder)
+
+        if (chromedriver_path != None):
+            chromedriver_path = os.path.abspath(chromedriver_path) 
+        
+        #######################################################################################
+
         self.driver = self._init_driver(dl_loc=temp_folder, headless=headless, chromedriver_path=chromedriver_path)
-        enable_downloads(self.driver, temp_folder)
+
+        self.enable_downloads(temp_folder)
         
         self._path_downloads_folder = dl_folder
         self._path_temp_folder = temp_folder
 
         self.connect()
+
         if login_url == None:
             self.load_session()
         else:
@@ -96,6 +104,7 @@ class ExtractDataPage:
         if self._verbose:
             print("Identifying filter elements...")
 
+        #Selenium driver elements that represent the selection fields on the site
         self.display_type = Select(self.driver.find_element_by_xpath(self._dropdown_xpaths['displayType']))
         self.start_month = Select(self.driver.find_element_by_xpath(self._dropdown_xpaths['startMonth']))
         self.start_year = Select(self.driver.find_element_by_xpath(self._dropdown_xpaths['startYear']))
@@ -106,12 +115,21 @@ class ExtractDataPage:
 
         self.download_button = self.driver.find_element_by_id(self._element_id_download_button)
     
+    #When the ExtractDataPage object is destroyed, the temp folder is cleared
     def __del__(self):
         self.clear_temp()
+
+    #Function that must be called in order to allow downloads to work properly on Windows
+    def enable_downloads(self, dirpath):
+        dirpath = os.path.abspath(dirpath)
+        self.driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
+
+        params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': dirpath}}
+        self.driver.execute("send_command", params)
         
     def _init_driver(self, dl_loc, headless=True, chromedriver_path=None):
         options = webdriver.ChromeOptions()
-        prefs = {
+        prefs = {   
                 'download.default_directory':dl_loc,
                 'download.directory_upgrade':True,
                 'download.prompt_for_download':False,

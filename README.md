@@ -198,20 +198,9 @@ On Windows, you must specify the path to the chromedriver when initializing the 
 
 There is a copy of chromedriver located in the `chromedrivers/windows` folder, so you can type:
 ```
->>> page = ExtractDataPage(chromedriver_path='chromedrivers/windows/chromedriver')
+>>> page = ExtractDataPage(chromedriver_path='chromedrivers/windows/chromedriver.exe')
 ```
 
-*NOTE* Downloading on Windows currently does not work, due to the issue discussed here: https://stackoverflow.com/questions/45631715/downloading-with-chrome-headless-and-selenium
-
-The workaround mentioned in the above link is included in `creditflux.py`, however it does not always work. 
-
-```
-$ python -i main.py
->>> from creditflux import enable_downloads
->>> page = ExtractDataPage()
->>> enable_downloads(page.driver, 'Downloads')
->>> page.download('1828 CLO')
-```
 
 ## ExtractDataPage ##
 
